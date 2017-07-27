@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include<stdint.h>
+#include <stdint.h>
+
 #define MAX 255
 #define MAX_FIGLI 1024
 #define DIM 1048576
@@ -55,42 +56,45 @@ int main()                                    //NON CONTROLLO CHE I NOMI SIANO A
 
     while(1)
     {
-        input=getinput(MAX);
-        curr=strtok (input," ");
+        input   = getinput(MAX);
+        curr    = strtok (input, " ");
 
-        if(!strcmp(curr,"create_dir")||!strcmp(curr,"create"))
+        if(!strcmp(curr, "create_dir") || !strcmp(curr, "create"))
         {
-            curr=strtok (NULL," "); //curr diventa la directory
+            curr = strtok (NULL, " "); //curr diventa la directory
             create(curr, input);
         }
-        else if(!strcmp(curr,"read"))
+        else if(!strcmp(curr, "read"))
         {
-            curr=strtok (NULL," ");
+            curr = strtok (NULL, " ");
             read(curr);
         }
-        else if(!strcmp(curr,"write"))
+        else if(!strcmp(curr, "write"))
         {
-            curr=strtok (NULL," ");
+            curr = strtok (NULL, " ");
             write(curr);
         }
-        else if(!strcmp(curr,"delete"))
+        else if(!strcmp(curr, "delete"))
         {
-            curr=strtok (NULL," ");
-            i=deleted(curr);
-            if (i) printf("ok\n");
-            else printf("no\n");
+            curr    = strtok (NULL, " ");
+            i       = deleted(curr);
+            if(i)
+                printf("ok\n");
+            else
+                printf("no\n");
         }
-        else if(!strcmp(curr,"delete_r"))
+        else if(!strcmp(curr, "delete_r"))
         {
-            curr=strtok (NULL," ");
+            curr = strtok (NULL, " ");
             deleted_r(curr);
         }
-        else if(!strcmp(curr,"find"))
+        else if(!strcmp(curr, "find"))
         {
-            curr=strtok (NULL," ");
+            curr = strtok (NULL, " ");
             findn(curr);
         }
-        else if(!strcmp(curr,"exit")) return 0;
+        else if(!strcmp(curr, "exit"))
+            return 0;
         free(input);
     }
 }
@@ -99,75 +103,79 @@ void hashdel(nodo* old)
 {
     unsigned int temp;
     nodo *temp2;
-    temp=jenkins_one_at_a_time_hash(old->dir, strlen(old->dir));
-    hash[temp]=NULL;
+    temp        = jenkins_one_at_a_time_hash(old->dir, strlen(old->dir));
+    hash[temp]  = NULL;
     temp++;
     while(hash[temp])
     {
-        temp2=hash[temp];
-        hash[temp]=NULL;
+        temp2       = hash[temp];
+        hash[temp]  = NULL;
         insert(temp2);
-        temp=(temp+1)%DIM;
+        temp        = (temp + 1) % DIM;
     }
 }
 
 void findn(char *curr)
 {
-    int dim=MAX;
+    int dim = MAX;
     int t;
-    int i=0;
+    int i = 0;
     char *str;
     char **lista;
     nodol *testa;
     nodol *coda;
     nodol *temp;
 
-    if (!root->figlio) printf("no\n");
+    if (!root->figlio)
+        printf("no\n");
     else
     {
-        testa=(nodol*)malloc(sizeof(nodol));
-        lista=(char**)malloc(dim*sizeof(char *));
-        testa->corrente=root->figlio;
-        coda=testa;
-        testa->next=NULL;
-        lista[0]=NULL;
+        testa           = (nodol*) malloc(sizeof(nodol));
+        lista           = (char**) malloc(dim * sizeof(char *));
+        testa->corrente = root->figlio;
+        coda            = testa;
+        testa->next     = NULL;
+        lista[0]        = NULL;
         while(testa)
         {
-            str=strrchr(testa->corrente->dir,'/');
-            str=&str[1];
-            if (!strcmp(str,curr))
+            str = strrchr(testa->corrente->dir, '/');
+            str = &str[1];
+            if (!strcmp(str, curr))
             {
-                if(i==dim){
-                   lista=realloc(lista, sizeof(char*)*(dim+=MAX));
+                if(i == dim){
+                   lista = realloc(lista, sizeof(char*) * (dim += MAX));
                 }
-                lista[i]=testa->corrente->dir;
+                lista[i] = testa->corrente->dir;
                 i++;
             }
             if (testa->corrente->fratello)
             {
-                temp=(nodol *)malloc(sizeof(nodol));
-                temp->corrente=testa->corrente->fratello;
-                temp->next=NULL;
-                coda->next=temp;
+                temp            = (nodol *)malloc(sizeof(nodol));
+                temp->corrente  = testa->corrente->fratello;
+                temp->next      = NULL;
+                coda->next      = temp;
                 coda=temp;
             }
             if (testa->corrente->figlio)
             {
-                temp=(nodol *)malloc(sizeof(nodol));
-                temp->corrente=testa->corrente->figlio;
-                temp->next=NULL;
-                coda->next=temp;
-                coda=temp;
+                temp            = (nodol *)malloc(sizeof(nodol));
+                temp->corrente  = testa->corrente->figlio;
+                temp->next      = NULL;
+                coda->next      = temp;
+                coda            = temp;
             }
-            temp=testa;
-            testa=testa->next;
+            temp    = testa;
+            testa   = testa->next;
             free(temp);
         }
-        if(!i) printf("no\n");
-        else{
-        lista=realloc(lista, sizeof(char*)*(i));
-        qsort(lista, i, sizeof(char *), cstring_cmp);
-        for(t=0;t<i;t++) printf("ok %s\n",lista[t]);
+        if(!i)
+            printf("no\n");
+        else
+        {
+            lista = realloc(lista, sizeof(char*) * (i));
+            qsort(lista, i, sizeof(char *), cstring_cmp);
+            for(t = 0; t < i; t++)
+                printf("ok %s\n", lista[t]);
         }
         free(lista);
     }
@@ -183,50 +191,58 @@ void deleted_r(char *curr)
 {
     nodo *padre;
     nodo **pila;
-    int i=0;
-    int t=0;
-    int dim=MAX;
+    int i   = 0;
+    int t   = 0;
+    int dim = MAX;
 
-    padre=find(curr);
-    if (padre==NULL) printf("no\n");
+    padre   = find(curr);
+    if (padre == NULL)
+        printf("no\n");
     else if (!(padre->figlio))
     {
-        i=deleted(curr);
-        if (i) printf("ok\n");
-        else printf ("Qualcosa non va");
+        i = deleted(curr);
+        if (i)
+            printf("ok\n");
+        else
+            printf ("Qualcosa non va");
     }
     else
     {
-        pila=(nodo**)malloc(dim*sizeof(nodo *));
-        pila[i]=padre->figlio;
-        padre->figlio=NULL;
-        while(pila[i]->figlio||pila[i]->fratello)
+        pila            = (nodo**)malloc(dim * sizeof(nodo *));
+        pila[i]         = padre->figlio;
+        padre->figlio   = NULL;
+        while(pila[i]->figlio || pila[i]->fratello)
         {
             if (pila[i]->figlio)
             {
                 t++;
-                if(t==dim) pila=realloc(pila, sizeof(nodo*)*(dim+=MAX));
-                pila[t]=pila[i]->figlio;
+                if(t == dim)
+                    pila = realloc(pila, sizeof(nodo*) * (dim += MAX));
+                pila[t] = pila[i]->figlio;
             }
             if (pila[i]->fratello)
             {
                 t++;
-                if(t==dim) pila=realloc(pila, sizeof(nodo*)*(dim+=MAX));
-                pila[t]=pila[i]->fratello;
+                if(t == dim)
+                    pila = realloc(pila, sizeof(nodo*) * (dim += MAX));
+                pila[t] = pila[i]->fratello;
             }
             i++;
         }
-        while(t>=0)
+        while(t >= 0)
         {
             hashdel(pila[t]);
             free(pila[t]->dir);
-            if(pila[t]->stringa) free(pila[t]->stringa);
+            if(pila[t]->stringa)
+                free(pila[t]->stringa);
             free(pila[t]);
             t--;
         }
-        i=deleted(curr);
-        if (i) printf("ok\n");
-        else printf ("Qualcosa non va");
+        i = deleted(curr);
+        if (i)
+            printf("ok\n");
+        else
+            printf ("Qualcosa non va");
         free(pila);
     }
 }
@@ -234,34 +250,36 @@ void deleted_r(char *curr)
 
 int deleted(char *curr)
 {
-    int i=0;
+    int i = 0;
     char *temp;
     nodo *padre;
     nodo *son;
 
-    son=find(curr);
-    temp=strrchr(curr,'/'); //posizione ultimo '/'
-    temp[0]='\0';
-    padre=find(curr);
-    temp[0]='/';
+    son     = find(curr);
+    temp    = strrchr(curr,'/'); //posizione ultimo '/'
+    temp[0] = '\0';
+    padre   = find(curr);
+    temp[0] = '/';
 
-    if(son&&padre&&!(son->figlio))
+    if(son && padre && !(son->figlio))
     {
-        if (padre->figlio==son)
+        if (padre->figlio == son)
         {
-            padre->figlio=son->fratello;
+            padre->figlio = son->fratello;
         }
         else
         {
-            padre=padre->figlio;
-            while(padre->fratello!=son) padre=padre->fratello;
-            padre->fratello=son->fratello;
+            padre = padre->figlio;
+            while(padre->fratello != son)
+                padre = padre->fratello;
+            padre->fratello = son->fratello;
         }
         hashdel(son);
         free(son->dir);
-        if(son->stringa) free(son->stringa);
+        if(son->stringa)
+            free(son->stringa);
         free(son);
-        i=1;
+        i = 1;
     }
     return i;
 }
@@ -274,30 +292,37 @@ void write(char *curr)                        //NON CONTROLLO CHE LE STRINGHE SI
 {
     int temp1;
     nodo *temp;
-    temp=find(curr);
-    if (temp==NULL) printf("no\n");
-    else if(temp->tipo==0) printf("no\n");
+    temp = find(curr);
+    if (temp == NULL)
+        printf("no\n");
+    else if(temp->tipo == 0)
+        printf("no\n");
     else
     {
-        if (temp->stringa!=NULL) free(temp->stringa);
-        curr=strtok (NULL," ");
-        temp1=strlen(curr);
-        curr[temp1-1]='\0';
-        curr=&curr[1];
-        temp->stringa=(char *)malloc((strlen(curr)+1)*sizeof(char));
+        if (temp->stringa != NULL)
+            free(temp->stringa);
+        curr            = strtok (NULL, " ");
+        temp1           = strlen(curr);
+        curr[temp1-1]   = '\0';
+        curr            = &curr[1];
+        temp->stringa   = (char *)malloc((strlen(curr) + 1) * sizeof(char));
         strcpy(temp->stringa, curr);
-        printf("ok %d\n",temp1-2);
+        printf("ok %d\n", temp1-2);
     }
 }
 
 void read(char *curr)
 {
     nodo *temp;
-    temp=find(curr);
-    if (temp==NULL) printf("no\n");
-    else if (temp->tipo==0) printf("no\n");
-    else if (temp->stringa==NULL) printf("contenuto \n");
-    else printf("contenuto %s\n",temp->stringa);
+    temp = find(curr);
+    if (temp == NULL)
+        printf("no\n");
+    else if (temp->tipo == 0)
+        printf("no\n");
+    else if (temp->stringa == NULL)
+        printf("contenuto \n");
+    else
+        printf("contenuto %s\n", temp->stringa);
 }
 
 void create(char *curr, char *input)        // NON CONTROLLO CHE LA DIRECTORY SIA SCRITTA BENE (CON I GIUSTI /)
@@ -307,27 +332,30 @@ void create(char *curr, char *input)        // NON CONTROLLO CHE LA DIRECTORY SI
     char *temp;
     int i;       //var contatore
 
-    son=find(curr);
-    temp=strrchr(curr,'/'); //posizione ultimo '/'
-    temp[0]='\0';
-    padre=find(curr);
-    temp[0]='/';
-    if(!padre||son) printf("no\n");
+    son     = find(curr);
+    temp    = strrchr(curr, '/'); //posizione ultimo '/'
+    temp[0] = '\0';
+    padre   = find(curr);
+    temp[0] = '/';
+    if(!padre || son)
+        printf("no\n");
     else
     {
-        if(padre->tipo==1) printf("no\n");
+        if(padre->tipo == 1)
+            printf("no\n");
         else
         {
-            if (padre->altezza>=MAX) printf("no\n");
+            if (padre->altezza >= MAX)
+                printf("no\n");
             else
             {
-                if (padre->figlio==NULL)
+                if (padre->figlio == NULL)
                 {
-                    son=creael();
-                    padre->figlio=son;
-                    son->dir=(char *)malloc((strlen(curr)+1)*sizeof(char));
+                    son             = creael();
+                    padre->figlio   = son;
+                    son->dir        = (char *)malloc((strlen(curr)+1)*sizeof(char));
                     strcpy(son->dir, curr);
-                    son->altezza=(padre->altezza)+1;
+                    son->altezza    = (padre->altezza) + 1;
                     if(!strcmp(input,"create")) son->tipo=1;
                     insert(son);
                     printf("ok\n");
