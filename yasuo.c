@@ -26,8 +26,6 @@ typedef struct n     //utilizzata nella find
 } nodol;
 
 
-
-
 void init();                 //inizializza root e hash table
 nodo* creael();              //alloca un elemento generico (tipo directory di default)
 char *getinput(int size);    //ritorna un puntatore alla stringa acquisita da stdin
@@ -40,15 +38,18 @@ int deleted(char *curr);      //elimina l' elemento curr, se esso non ha figli
 void hashdel(nodo* old);      //cancella old dalla hashmap
 void findn(char *curr);       //funzione find
 void deleted_r(char *curr);   //funzione delete ricorsiva
+void rehashing();             //raddoppia la dimensione dell' hash table ed esegue il rehashing
+void recursivehash(nodo* el);
 
 
-uint32_t jenkins_one_at_a_time_hash(char* key, size_t length);    //funzione di hashing
-int cstring_cmp(const void *a, const void *b);                    //funzione string compare per il qsort
+uint32_t jenkins_one_at_a_time_hash(char* key, size_t length);  //funzione di hashing
+int cstring_cmp(const void *a, const void *b);                      //funzione string compare per il qsort
 
 
 nodo* root;    //radice albero
 nodo** hash;   //puntatore alla hash table
-const int DIM = 1048576;    //dimensione hash table
+int DIM = 4096;    //dimensione hash table
+int contatore = 0; //elementi presenti nell' albero
 
 int main()
 {
@@ -67,6 +68,8 @@ int main()
         {
             curr = strtok (NULL, " "); //curr diventa la directory
             create(curr, input);
+            if (contatore==(DIM/2))
+                rehashing();
         }
         else if(!strcmp(curr, "read"))
         {
@@ -176,6 +179,7 @@ void create(char *curr, char *input)
                     son->tipo   = 1;
                 padre->figli++;
                 insert(son);
+                contatore++;
                 printf("ok\n");
             }
             else
@@ -194,6 +198,7 @@ void create(char *curr, char *input)
                         son->tipo = 1;
                     padre->figli++;
                     insert(son);
+                    contatore++;
                     printf("ok\n");
                 }
             }
@@ -296,6 +301,7 @@ int deleted(char *curr)
         if(son->stringa)
             free(son->stringa);
         free(son);
+        contatore--;
         i = 1;
     }
     return i;
@@ -440,6 +446,7 @@ void deleted_r(char *curr)
             if(pila[t]->stringa)
                 free(pila[t]->stringa);
             free(pila[t]);
+            contatore--;
             t--;
         }
         deleted(curr);
@@ -469,4 +476,19 @@ int cstring_cmp(const void *a, const void *b)
     const char **ia = (const char **)a;
     const char **ib = (const char **)b;
     return strcmp(*ia, *ib);
+}
+
+void rehashing(){
+    free(hash);
+    DIM=DIM*4;
+    hash = (nodo **) calloc(DIM, sizeof (nodo *));
+    recursivehash(root->figlio);
+}
+
+void recursivehash(nodo* el){
+    if(el->figlio)
+        recursivehash (el->figlio);
+    if(el->fratello)
+        recursivehash (el->fratello);
+    insert(el);
 }
